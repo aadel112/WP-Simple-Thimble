@@ -1,6 +1,8 @@
 # WP-Simple-Thimble
 A Wordpress Integration of Simple Thimble, which in-lines images/css/js, etc as data-uris
 
+![Simple Thimble](https://github.com/aadel112/WP-Simple-Thimble/blob/master/assets/icon-128x128.png)
+
 ## Use
 Just install and activate. You should deactivate all other performance improvment plugins when activating this one, and then slowly re-activate them as needed, removing the ones you no longer need.
 
