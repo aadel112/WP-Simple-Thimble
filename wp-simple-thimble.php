@@ -15,11 +15,23 @@ include_once( __DIR__ . '/lib/simple-thimble.php');
 wp_simplethimble_main();
 
 function wp_simplethimble_scripts( $tag, $handle, $src ) {
-    return SimpleThimble::create( array(), $tag )->embed()->html();
+    $st = SimpleThimble::create();
+    if( $st->browser_limited() || $st->browser_none() ) {
+        return $tag;
+    } else {
+        $data = SimpleThimble::get_uri( $src );
+        return str_replace( $src, $data, $tag );
+    }
 }
 
 function wp_simplethimble_styles( $tag, $handle, $href ) {
-    return SimpleThimble::create( array(), $tag )->embed()->html();
+    $st = SimpleThimble::create();
+    if( $st->browser_limited() || $st->browser_none() ) {
+        return $tag;
+    } else {
+        $data = SimpleThimble::get_uri( $href );
+        return str_replace( $href, $data, $tag );
+    }
 }
 
 function wp_simplethimble_content( $content ) {
@@ -30,5 +42,4 @@ function wp_simplethimble_main() {
     add_filter( 'style_loader_tag', 'wp_simplethimble_styles', 999, 3 );
     add_filter( 'script_loader_tag', 'wp_simplethimble_scripts', 999, 3 );
     add_filter( 'the_content', 'wp_simplethimble_content' );
-
 }
