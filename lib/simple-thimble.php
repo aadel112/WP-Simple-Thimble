@@ -12,6 +12,7 @@ class SimpleThimble {
     protected static $_default_config = array(
         'minify' => 1,
         'strip_get_request' => 1,
+        'limit' => 5000000,
         'debug' => 0
     );
     protected static $_config = array();
@@ -149,7 +150,9 @@ class SimpleThimble {
 
     # function to get the mime type of the resource
     protected static function _get_mime_type( $resource ) {
-        $type = mime_content_type( $resource );
+        $type = file_exists($resource) ? 
+            mime_content_type( $resource ) :
+            'text/plain';
         if( preg_match( '/\.js(\?|$)/', $resource ) ) {
             $type = 'text/javascript';
         } else if( preg_match( '/\.css(\?|$)/', $resource ) ) {
@@ -158,13 +161,27 @@ class SimpleThimble {
         return $type; 
     }
     #function to get the base64 encoding of a resource
-    protected static function _get_uri_data( $resource ) {
+    protected static function _get_uri_data( $resource, $origfile = null, $type = null ) {
+        # for css, replace urls with data, important especially for relative path urls in css
+        if( $type == 'text/css' && $origfile ) {
+            $matches = array();
+            $d = dirname( $origfile );
+            if( preg_match_all( '/url\s*\([^\)]+\)/', $resource, $matches ) ) {
+                foreach( $matches[0] as $m ) {
+                    $url = preg_replace('/url\s*\((\'|")([^\'"]*)(\'|").*/', "\\2", $m );
+                    $try = self::_normalize_resource( "$d/$url" );
+                    $data = file_exists( $try ) ? self::get_uri($try) : self::get_uri($url);
+                    $resource = str_replace( $m, "url($data)", $resource );
+
+                }
+            }
+        }
         return base64_encode($resource);
     }
 
     # this function actually just makes local resources ready for being read as local resources
     protected static function _normalize_resource( $resource ) {
-        
+
         if( self::$_config['debug'] ) {
             error_log("Normalize1: $resource");
         }
@@ -194,17 +211,39 @@ class SimpleThimble {
     public static function get_uri( $resource ) {
         $original_resource = $resource;
         $resource = self::_normalize_resource( $resource );
-        if( self::is_resource_local( $resource ) && strpos($resource, 'data') !== 0 && file_exists( $resource ) ) {
-            $resource_data = self::_get_local_resource( $resource );
-            $mime_type = self::_get_mime_type( $resource );
-            $uri_data = self::_get_uri_data( $resource_data );
-            return "data:$mime_type;base64,$uri_data";
-        } else {
-            #TODO
+        //         echo $resource . "</br>";
+        $local = self::is_resource_local(   $resource ) && file_exists( $resource );
+        if( strpos($resource, 'data') === 0 ) {
             return $original_resource;
+        } else {
+            $mime_type = self::_get_mime_type( $resource );
+            $resource_data = $local ? self::_get_local_resource( $resource ) : self::_get_remote_resource( $original_resource );
+            if( $mime_type == 'text/css' && strrpos( $resource_data, 'url(' ) !== false && $local ) {
+                return $original_resource;
+            }
+            $uri_data = self::_get_uri_data( $resource_data, $resource, $mime_type );
+            if( ( !self::$_config['limit'] || strlen( $uri_data ) <= self::$_config['limit'] ) ) {
+                return "data:$mime_type;base64,$uri_data";
+            } else {
+                return $original_resource;
+            }
         }
     }
 
+    protected static function _get_remote_resource( $resource ) {
+        if(strrpos($resource, '//') === 0) {
+            $resource = "http:$resource";
+        }
+        $ch = curl_init();
+		$timeout = 5;
+		curl_setopt($ch, CURLOPT_URL, $resource);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+        $data = curl_exec($ch);
+        curl_close($ch);
+		return $data;
+
+    }
     
     #function to return file contents of local resources/
     protected static function _get_local_resource( $resource ) {
@@ -254,7 +293,7 @@ class SimpleThimble {
         $this->_converted_html = preg_replace( '/\s+/g', ' ', $this->_converted_html );
         return $this;
     }
-    
+
     #function to check of curl is required
     public static function is_resource_local( $resource ) {
         return stream_is_local( $resource );       
