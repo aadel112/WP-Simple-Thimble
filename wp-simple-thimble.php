@@ -12,9 +12,9 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
 include_once( __DIR__ . '/lib/simple-thimble.php');
 
-wp_simplethimble_main();
+simplethimble_main();
 
-function wp_simplethimble_scripts( $tag, $handle, $src ) {
+function simplethimble_scripts( $tag, $handle, $src ) {
     $st = SimpleThimble::create();
     if( $st->browser_limited() || $st->browser_none() ) {
         return $tag;
@@ -24,7 +24,7 @@ function wp_simplethimble_scripts( $tag, $handle, $src ) {
     }
 }
 
-function wp_simplethimble_styles( $tag, $handle, $href ) {
+function simplethimble_styles( $tag, $handle, $href ) {
     $st = SimpleThimble::create();
     if( $st->browser_limited() || $st->browser_none() ) {
         return $tag;
@@ -34,12 +34,12 @@ function wp_simplethimble_styles( $tag, $handle, $href ) {
     }
 }
 
-function wp_simplethimble_content( $content ) {
+function simplethimble_content( $content ) {
     return SimpleThimble::create( array(), $content )->embed()->html();
 }
 
-function wp_simplethimble_main() {
-    add_filter( 'style_loader_tag', 'wp_simplethimble_styles', 999, 3 );
-    add_filter( 'script_loader_tag', 'wp_simplethimble_scripts', 999, 3 );
-    add_filter( 'the_content', 'wp_simplethimble_content' );
+function simplethimble_main() {
+    add_filter( 'style_loader_tag', 'simplethimble_styles', 999, 3 );
+    add_filter( 'script_loader_tag', 'simplethimble_scripts', 999, 3 );
+    add_filter( 'the_content', 'simplethimble_content' );
 }
