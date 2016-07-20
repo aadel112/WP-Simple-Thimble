@@ -19,7 +19,7 @@ function simplethimble_scripts( $tag, $handle, $src ) {
     if( $st->browser_limited() || $st->browser_none() ) {
         return $tag;
     } else {
-        $data = SimpleThimble::get_uri( $src );
+        $data = SimpleThimble::get_uri( $src, 'text/javascript' );
         return str_replace( $src, $data, $tag );
     }
 }
@@ -29,7 +29,7 @@ function simplethimble_styles( $tag, $handle, $href ) {
     if( $st->browser_limited() || $st->browser_none() ) {
         return $tag;
     } else {
-        $data = SimpleThimble::get_uri( $href );
+        $data = SimpleThimble::get_uri( $href, 'text/css' );
         return str_replace( $href, $data, $tag );
     }
 }
