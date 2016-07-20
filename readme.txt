@@ -5,9 +5,13 @@ Donate link: https://www.paypal.me/aadel112/5
 License: GPL V3
 License URI: https://github.com/aadel112/WP-Simple-Thimble/blob/master/LICENSE
 
+DO NOT USE. REQUIRES BETTER TESTING.
+
 This plugin embeds or in-lines image/css/js content into the page before it's loaded. This really improves page load speed scores, and can really improve    actual load time if either the network connection is not blazingly fast, server side caching is used, or a combination of the two.
 
 == Description ==
+DO NOT USE. REQUIRES BETTER TESTING.
+
 This plugin embeds or in-lines image/css/js content into the page before it's loaded. This really improves page load speed scores, and can really improve    actual load time if either the network connection is not blazingly fast, server side caching is used, or a combination of the two.
 
 Warnings that are commonly eliminated in page load speed testing tools include
